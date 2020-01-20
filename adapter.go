@@ -29,16 +29,16 @@ type xmlVisitor struct {
     ev ExifVisitor
 }
 
-func (xv *xmlVisitor) HandleStart(tagName *string, attrp *map[string]string, xp *xmlvisitor.XmlParser) error {
+func (xv *xmlVisitor) HandleStart(tagName string, attrp map[string]string, xp *xmlvisitor.XmlParser) error {
     return nil
 }
 
-func (xv *xmlVisitor) HandleEnd(tagName *string, xp *xmlvisitor.XmlParser) error {
+func (xv *xmlVisitor) HandleEnd(tagName string, xp *xmlvisitor.XmlParser) error {
     return nil
 }
 
-func (xv *xmlVisitor) HandleValue(tagName *string, value *string, xp *xmlvisitor.XmlParser) error {
-    return xv.ev.HandleTag(tagName, value)
+func (xv *xmlVisitor) HandleValue(tagName string, value string, xp *xmlvisitor.XmlParser) error {
+      return xv.ev.HandleTag(&tagName, &value)
 }
 
 func newXmlVisitor(ev ExifVisitor) (*xmlVisitor) {
@@ -76,10 +76,10 @@ func (et *ExifTool) getBytesFromCommand(cmd string, args []string) (buffer *byte
         fmt.Printf("CMD: [%s] %s\n", cmd, args)
     }
 
-    // It's necessary to pass in at least one non-variadic argument (otherwise 
+    // It's necessary to pass in at least one non-variadic argument (otherwise
     // you'll get warned about there not being enough arguments).
     c := exec.Command(cmd, args...)
-    
+
     var output bytes.Buffer
     c.Stdout = &output
     c.Stderr = &output
@@ -105,10 +105,10 @@ func (et *ExifTool) getLinesFromCommand(cmd string, args []string) (lines []stri
         fmt.Printf("CMD: [%s] %s\n", cmd, args)
     }
 
-    // It's necessary to pass in at least one non-variadic argument (otherwise 
+    // It's necessary to pass in at least one non-variadic argument (otherwise
     // you'll get warned about there not being enough arguments).
     c := exec.Command(cmd, args...)
-    
+
     var output bytes.Buffer
     c.Stdout = &output
     c.Stderr = &output
@@ -161,8 +161,8 @@ func (et *ExifTool) SetTag(ifd string, name string, valueParts []string) (err er
 
     cmd := make([]string, 0)
 
-    // If they don't want to modify the original file, they can copy it first. 
-    // It's either they do it or we do it and we don't want to necessitate 
+    // If they don't want to modify the original file, they can copy it first.
+    // It's either they do it or we do it and we don't want to necessitate
     // extra operations if not necessary.
     cmd = append(cmd, "--create-exif", "--tag", name, "--ifd", ifd, "-o", et.filepath)
 
@@ -198,7 +198,7 @@ func (et *ExifTool) HasThumbnail() (found bool, err error) {
     prefixLen := len(ThumbnailExistsLinePrefix)
 
     for _, line := range lines[o:] {
-        if len(line) > prefixLen && 
+        if len(line) > prefixLen &&
            line[:prefixLen] == ThumbnailExistsLinePrefix {
             found = true
             break
